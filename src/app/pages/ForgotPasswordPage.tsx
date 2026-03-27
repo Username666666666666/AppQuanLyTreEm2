@@ -6,21 +6,30 @@ import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { toast } from "sonner";
 import { Mail, ArrowLeft } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock email validation
-    if (email) {
-      toast.success("Email đã được gửi! Vui lòng kiểm tra hộp thư.");
-      // Navigate to reset password page with OTP
-      navigate("/reset-password", { state: { email } });
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password',
+    });
+
+    if (error) {
+      toast.error("Lỗi: " + error.message);
     } else {
-      toast.error("Vui lòng nhập email!");
+      toast.success("Yêu cầu đã được gửi! Vui lòng kiểm tra email.");
+      // Chuyển hướng sang trang chờ nhập pass mới
+      // Supabase sẽ gửi link, nhưng nếu bạn muốn dùng OTP thủ công thì dùng hàm khác
+      navigate("/reset-password", { state: { email } });
     }
+    setLoading(false);
   };
 
   return (

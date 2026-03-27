@@ -7,48 +7,72 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../co
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../components/ui/input-otp";
 import { toast } from "sonner";
 import { Lock, Check, X } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || "";
-  
+  const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleVerifyOTP = () => {
-    // Mock OTP verification (accept "123456")
-    if (otp === "123456") {
-      setOtpVerified(true);
-      toast.success("Mã OTP chính xác!");
-    } else {
-      toast.error("Mã OTP không đúng! (Gợi ý: 123456)");
-    }
-  };
+const handleVerifyOTP = async () => {
+  setLoading(true);
+  const { error } = await supabase.auth.verifyOtp({
+    email: email, // Email lấy từ location.state
+    token: otp,   // Là chuỗi 6 số người dùng nhập
+    type: 'recovery',
+  });
 
-  const handleResetPassword = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!otpVerified) {
-      toast.error("Vui lòng xác thực OTP trước!");
-      return;
-    }
+  if (error) {
+    toast.error("Mã không đúng hoặc đã hết hạn!");
+  } else {
+    setOtpVerified(true);
+    toast.success("Xác thực thành công! Hãy nhập mật khẩu mới.");
+  }
+  setLoading(false);
+};
 
-    if (newPassword !== confirmPassword) {
-      toast.error("Mật khẩu xác nhận không khớp!");
-      return;
-    }
+ const handleResetPassword = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    if (newPassword.length < 6) {
-      toast.error("Mật khẩu phải có ít nhất 6 ký tự!");
+  // 🔥 chặn gọi 2 lần
+  if (loading) return;
+
+  if (!otpVerified) {
+    toast.error("Vui lòng xác thực OTP trước!");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    toast.error("Mật khẩu xác nhận không khớp!");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      toast.error("Lỗi đặt lại mật khẩu: " + error.message);
       return;
     }
 
     toast.success("Đặt lại mật khẩu thành công!");
     navigate("/login");
-  };
+
+  } catch (err) {
+    toast.error("Có lỗi xảy ra!");
+  } finally {
+    setLoading(false); // 🔥 luôn chạy, tránh kẹt loading
+  }
+};
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -77,10 +101,10 @@ export function ResetPasswordPage() {
               {/* OTP Section */}
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="otp">Mã OTP (6 chữ số)</Label>
+                  <Label htmlFor="otp">Mã OTP (8 chữ số)</Label>
                   <div className="flex items-center gap-3">
                     <InputOTP
-                      maxLength={6}
+                      maxLength={8}
                       value={otp}
                       onChange={(value) => setOtp(value)}
                       disabled={otpVerified}
@@ -92,12 +116,14 @@ export function ResetPasswordPage() {
                         <InputOTPSlot index={3} />
                         <InputOTPSlot index={4} />
                         <InputOTPSlot index={5} />
+                        <InputOTPSlot index={6} />
+                        <InputOTPSlot index={7} />
                       </InputOTPGroup>
                     </InputOTP>
                     <Button
                       type="button"
                       onClick={handleVerifyOTP}
-                      disabled={otp.length !== 6 || otpVerified}
+                      disabled={otp.length !== 8 || otpVerified}
                       variant={otpVerified ? "secondary" : "default"}
                       className={otpVerified ? "bg-green-100 hover:bg-green-100" : ""}
                     >
@@ -109,7 +135,7 @@ export function ResetPasswordPage() {
                     </Button>
                   </div>
                   <p className="text-xs text-gray-500">
-                    💡 Gợi ý: Dùng mã <span className="font-mono font-semibold">123456</span> để test
+                    💡 Ví dụ: Nhập mã <span className="font-mono font-semibold">12345678</span> 
                   </p>
                 </div>
 
@@ -180,21 +206,21 @@ export function ResetPasswordPage() {
                   <strong>Hướng dẫn:</strong>
                 </p>
                 <ol className="text-sm text-blue-800 list-decimal list-inside space-y-1 mt-2">
-                  <li>Nhập mã OTP 6 chữ số từ email</li>
+                  <li>Nhập mã OTP 8 chữ số từ email</li>
                   <li>Nhấn nút "Kiểm tra" để xác thực</li>
-                  <li>Nhập mật khẩu mới (tối thiểu 6 ký tự)</li>
+                  <li>Nhập mật khẩu mới (tối thiểu 8 ký tự)</li>
                   <li>Xác nhận lại mật khẩu</li>
                   <li>Nhấn "Đặt lại mật khẩu"</li>
                 </ol>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-base h-11"
-                disabled={!otpVerified}
-              >
-                Đặt lại mật khẩu
-              </Button>
+            <Button
+  type="submit"
+  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-base h-11"
+  disabled={!otpVerified || loading} // 🔥 chặn double click
+>
+  {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+</Button>
             </form>
           </CardContent>
         </Card>
