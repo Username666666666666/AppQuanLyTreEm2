@@ -19,14 +19,21 @@ export const syncUserFromSupabase = (sbUser: any): User | null => {
     localStorage.removeItem('currentUser');
     return null;
   }
+  
+  // Đảo thứ tự: lấy display_name trước, nếu không có mới lấy full_name của Google
+  const nameFromMetadata = sbUser.user_metadata?.display_name || 
+                           sbUser.user_metadata?.full_name || 
+                           'User';
+
   const user: User = {
     id: sbUser.id,
     email: sbUser.email || '',
-    name: sbUser.user_metadata?.display_name || 'User',
-    role: sbUser.user_metadata?.user_role || 'parent', // Lấy role từ metadata Supabase
+    name: nameFromMetadata, 
+    role: sbUser.user_metadata?.user_role || 'parent',
     subscriptionType: 'trial',
     isPremium: false,
   };
+  
   localStorage.setItem('currentUser', JSON.stringify(user));
   return user;
 };

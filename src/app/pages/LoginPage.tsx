@@ -64,11 +64,13 @@ const handleLogin = async (e: React.FormEvent) => {
     setLoading(false);
   };
 const handleGoogleLogin = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin }
-    });
-  };
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  });
+};
 
   return (
     <div className="min-h-screen relative overflow-hidden">

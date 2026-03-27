@@ -12,6 +12,7 @@ import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { AdminRolesPage } from "./pages/admin/AdminRolesPage";
 import { SupportPage } from "./pages/SupportPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { AuthCallbackPage } from "./pages/AuthCallbackPage";
 
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
@@ -30,5 +31,13 @@ export const router = createBrowserRouter([
   { path: "/admin/users", element: <AuthGuard adminOnly><AdminUsersPage /></AuthGuard> },
   { path: "/admin/roles", element: <AuthGuard adminOnly><AdminRolesPage /></AuthGuard> },
 
+ { path: "/login", element: <LoginPage /> },
+  // ... các trang khác giữ nguyên ...
+
+ {
+  path: "/auth/callback",
+  element: <AuthCallbackPage />,
+},
+  // LUÔN ĐỂ CÁI NÀY Ở DƯỚI CÙNG
   { path: "*", element: <NotFoundPage /> },
 ]);
