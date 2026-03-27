@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router";
+import { AuthGuard } from "./components/AuthGuard"; 
 import { LoginPage } from "./pages/LoginPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
@@ -60,5 +61,37 @@ export const router = createBrowserRouter([
   {
     path: "*",
     element: <NotFoundPage />,
+  },
+  {
+    path: "/upgrade",
+    element: <AuthGuard><UpgradePage /></AuthGuard>, // Bọc lại
+  },
+  {
+    path: "/upgrade-success",
+    element: <AuthGuard><UpgradeSuccessPage /></AuthGuard>, // Bọc lại
+  },
+  {
+    path: "/children/:id",
+    element: <AuthGuard><ChildDetailPage /></AuthGuard>, // Bọc lại
+  },
+  {
+    path: "/admin",
+    element: <AuthGuard adminOnly><AdminDashboard /></AuthGuard>, // Bọc admin
+  },
+  {
+    path: "/admin/users",
+    element: <AuthGuard adminOnly><AdminUsersPage /></AuthGuard>, // Bọc admin
+  },
+  {
+    path: "/admin/roles",
+    element: <AuthGuard adminOnly><AdminRolesPage /></AuthGuard>, // Bọc admin
+  },
+  {
+    path: "/support",
+    element: <AuthGuard><SupportPage /></AuthGuard>, // Bọc lại
+  },
+  {
+    path: "/",
+    element: <AuthGuard><DashboardPage /></AuthGuard>, // Bọc lại
   },
 ]);
