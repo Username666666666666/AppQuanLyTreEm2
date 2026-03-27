@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -39,10 +39,13 @@ export function DashboardPage() {
     { id: 2, name: "Phương Anh", age: 12, device: "iPhone", status: "connected", isPremium: true },
   ]);
 
+  useEffect(() => {
   if (!currentUser) {
     navigate("/login");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser) return null;
 
   const isPremiumUser = currentUser.isPremium;
 

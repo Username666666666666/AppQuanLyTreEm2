@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
@@ -36,10 +36,15 @@ export function AdminRolesPage() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
+ useEffect(() => {
   if (!currentUser || currentUser.role !== "admin") {
     navigate("/");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser || currentUser.role !== "admin") {
+  return null;
+}
 
   const permissions: Permission[] = [
     { id: "view_users", name: "Xem người dùng", description: "Xem danh sách và thông tin người dùng" },

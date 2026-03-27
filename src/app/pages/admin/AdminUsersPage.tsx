@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/card";
@@ -31,10 +31,15 @@ export function AdminUsersPage() {
   const [newUserEmail, setNewUserEmail] = useState("");
   const [newUserRole, setNewUserRole] = useState("user");
 
+ useEffect(() => {
   if (!currentUser || currentUser.role !== "admin") {
     navigate("/");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser || currentUser.role !== "admin") {
+  return null;
+}
 
   const [users, setUsers] = useState([
     { id: 1, name: "Nguyễn Văn A", email: "nguyenvana@email.com", role: "user", status: "active", isPremium: true },

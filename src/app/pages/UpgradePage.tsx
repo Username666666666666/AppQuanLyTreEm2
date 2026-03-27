@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
@@ -26,10 +26,15 @@ export function UpgradePage() {
   const currentUser = getCurrentUser();
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("yearly");
 
+ useEffect(() => {
   if (!currentUser) {
     navigate("/login");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser) {
+  return null;
+}
 
   const handleUpgrade = (plan: string, price: string) => {
     // Simulate payment process

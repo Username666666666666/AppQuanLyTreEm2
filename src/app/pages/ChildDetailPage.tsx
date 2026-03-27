@@ -5,6 +5,8 @@ import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Progress } from "../components/ui/progress";
 import { getCurrentUser } from "../lib/auth";
+import { useEffect } from "react";
+
 import { 
   ArrowLeft, 
   Crown, 
@@ -27,10 +29,15 @@ export function ChildDetailPage() {
   const { id } = useParams();
   const currentUser = getCurrentUser();
 
+ useEffect(() => {
   if (!currentUser) {
     navigate("/login");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser) {
+  return null; // tránh render khi chưa redirect xong
+}
 
   const isPremium = currentUser.isPremium;
 

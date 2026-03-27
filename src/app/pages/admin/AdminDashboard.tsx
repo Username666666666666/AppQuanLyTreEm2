@@ -14,15 +14,21 @@ import {
   Settings,
   BarChart
 } from "lucide-react";
+import { useEffect } from "react";
 
 export function AdminDashboard() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
+ useEffect(() => {
   if (!currentUser || currentUser.role !== "admin") {
     navigate("/");
-    return null;
   }
+}, [currentUser, navigate]);
+
+if (!currentUser || currentUser.role !== "admin") {
+  return null;
+}
 
   const stats = [
     { title: "Tổng người dùng", value: "1,234", icon: Users, color: "from-blue-500 to-cyan-500", change: "+12%" },
