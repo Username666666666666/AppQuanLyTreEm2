@@ -1,20 +1,15 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { getCurrentUser } from "../lib/auth"; // Phước nhớ sửa đúng đường dẫn tới file chứa hàm này nhé
 
-export function AuthGuard({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) {
-  const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+export function AuthGuard({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
+  const user = getCurrentUser();
 
-  useEffect(() => {
-    if (!currentUser) {
-      navigate("/login");
-    } else if (adminOnly && currentUser.role !== "admin") {
-      navigate("/");
-    }
-  }, [currentUser, navigate, adminOnly]);
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (!currentUser || (adminOnly && currentUser.role !== "admin")) return null;
+  if (adminOnly && user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   return <>{children}</>;
 }

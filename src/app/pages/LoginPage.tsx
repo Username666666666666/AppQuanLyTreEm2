@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { login, register } from "../lib/auth";
+import { syncUserFromSupabase } from "../lib/auth";
 import { toast } from "sonner";
 import { Mail, Lock, User, Chrome } from "lucide-react";
+import { supabase } from "../../supabaseClient";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -16,27 +18,56 @@ export function LoginPage() {
   const [registerEmail, setRegisterEmail] = useState("");
   const [registerPassword, setRegisterPassword] = useState("");
   const [registerName, setRegisterName] = useState("");
-
-  const handleLogin = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
+ 
+const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = login(loginEmail, loginPassword);
-    if (user) {
+    setLoading(true);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    });
+
+    if (error) {
+      toast.error("Lỗi: " + error.message);
+    } else if (data.user) {
+      // ĐỒNG BỘ NGAY LẬP TỨC
+      syncUserFromSupabase(data.user);
       toast.success("Đăng nhập thành công!");
-      navigate("/");
-    } else {
-      toast.error("Email hoặc mật khẩu không đúng!");
+      // Load lại trang để AuthGuard nhận diện user mới 100%
+      window.location.href = "/";
     }
+    setLoading(false);
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+ const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    register(registerEmail, registerPassword, registerName);
-    toast.success("Đăng ký thành công!");
-    navigate("/");
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email: registerEmail,
+      password: registerPassword,
+      options: {
+        data: { 
+          display_name: registerName,
+          user_role: "user" 
+        } 
+      }
+    });
+    if (error) {
+      toast.error("Lỗi: " + (error.status === 429 ? "Gửi mail quá nhanh, vui lòng đợi!" : error.message));
+    } else {
+      toast.success("Đăng ký thành công! Hãy kiểm tra email.");
+      setLoginEmail(registerEmail);
+      setActiveTab("login");
+    }
+    setLoading(false);
   };
-
-  const handleGoogleLogin = () => {
-    toast.info("Chức năng đăng nhập Google sẽ được tích hợp sau!");
+const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    });
   };
 
   return (
@@ -110,7 +141,7 @@ export function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="login" className="w-full">
+             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="login" className="text-base">Đăng nhập</TabsTrigger>
                   <TabsTrigger value="register" className="text-base">Đăng ký</TabsTrigger>

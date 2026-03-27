@@ -14,84 +14,21 @@ import { SupportPage } from "./pages/SupportPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
 export const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <DashboardPage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPasswordPage />,
-  },
-  {
-    path: "/upgrade",
-    element: <UpgradePage />,
-  },
-  {
-    path: "/upgrade-success",
-    element: <UpgradeSuccessPage />,
-  },
-  {
-    path: "/children/:id",
-    element: <ChildDetailPage />,
-  },
-  {
-    path: "/admin",
-    element: <AdminDashboard />,
-  },
-  {
-    path: "/admin/users",
-    element: <AdminUsersPage />,
-  },
-  {
-    path: "/admin/roles",
-    element: <AdminRolesPage />,
-  },
-  {
-    path: "/support",
-    element: <SupportPage />,
-  },
-  {
-    path: "*",
-    element: <NotFoundPage />,
-  },
-  {
-    path: "/upgrade",
-    element: <AuthGuard><UpgradePage /></AuthGuard>, // Bọc lại
-  },
-  {
-    path: "/upgrade-success",
-    element: <AuthGuard><UpgradeSuccessPage /></AuthGuard>, // Bọc lại
-  },
-  {
-    path: "/children/:id",
-    element: <AuthGuard><ChildDetailPage /></AuthGuard>, // Bọc lại
-  },
-  {
-    path: "/admin",
-    element: <AuthGuard adminOnly><AdminDashboard /></AuthGuard>, // Bọc admin
-  },
-  {
-    path: "/admin/users",
-    element: <AuthGuard adminOnly><AdminUsersPage /></AuthGuard>, // Bọc admin
-  },
-  {
-    path: "/admin/roles",
-    element: <AuthGuard adminOnly><AdminRolesPage /></AuthGuard>, // Bọc admin
-  },
-  {
-    path: "/support",
-    element: <AuthGuard><SupportPage /></AuthGuard>, // Bọc lại
-  },
-  {
-    path: "/",
-    element: <AuthGuard><DashboardPage /></AuthGuard>, // Bọc lại
-  },
+  { path: "/login", element: <LoginPage /> },
+  { path: "/forgot-password", element: <ForgotPasswordPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
+  
+  // Các trang yêu cầu User thường
+  { path: "/", element: <AuthGuard><DashboardPage /></AuthGuard> },
+  { path: "/upgrade", element: <AuthGuard><UpgradePage /></AuthGuard> },
+  { path: "/upgrade-success", element: <AuthGuard><UpgradeSuccessPage /></AuthGuard> },
+  { path: "/children/:id", element: <AuthGuard><ChildDetailPage /></AuthGuard> },
+  { path: "/support", element: <AuthGuard><SupportPage /></AuthGuard> },
+
+  // Các trang yêu cầu Admin
+  { path: "/admin", element: <AuthGuard adminOnly><AdminDashboard /></AuthGuard> },
+  { path: "/admin/users", element: <AuthGuard adminOnly><AdminUsersPage /></AuthGuard> },
+  { path: "/admin/roles", element: <AuthGuard adminOnly><AdminRolesPage /></AuthGuard> },
+
+  { path: "*", element: <NotFoundPage /> },
 ]);

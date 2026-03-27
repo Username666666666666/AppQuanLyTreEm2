@@ -1,4 +1,5 @@
-// Mock authentication utilities
+import { supabase } from "../../supabaseClient";
+
 export interface User {
   id: string;
   email: string;
@@ -8,65 +9,30 @@ export interface User {
   isPremium: boolean;
 }
 
-export const mockUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@example.com',
-    name: 'Administrator',
-    role: 'admin',
-    subscriptionType: 'complete',
-    isPremium: true,
-  },
-  {
-    id: '2',
-    email: 'parent@example.com',
-    name: 'Phụ huynh',
-    role: 'parent',
-    subscriptionType: 'trial',
-    isPremium: false,
-  },
-];
-
 export const getCurrentUser = (): User | null => {
   const userJson = localStorage.getItem('currentUser');
-  if (userJson) {
-    return JSON.parse(userJson);
-  }
-  return null;
+  return userJson ? JSON.parse(userJson) : null;
 };
 
-export const setCurrentUser = (user: User | null) => {
-  if (user) {
-    localStorage.setItem('currentUser', JSON.stringify(user));
-  } else {
+export const syncUserFromSupabase = (sbUser: any): User | null => {
+  if (!sbUser) {
     localStorage.removeItem('currentUser');
+    return null;
   }
-};
-
-export const login = (email: string, password: string): User | null => {
-  // Mock login
-  const user = mockUsers.find(u => u.email === email);
-  if (user) {
-    setCurrentUser(user);
-    return user;
-  }
-  return null;
-};
-
-export const logout = () => {
-  setCurrentUser(null);
-};
-
-export const register = (email: string, password: string, name: string): User => {
-  // Mock registration
-  const newUser: User = {
-    id: Date.now().toString(),
-    email,
-    name,
-    role: 'parent',
+  const user: User = {
+    id: sbUser.id,
+    email: sbUser.email || '',
+    name: sbUser.user_metadata?.display_name || 'User',
+    role: sbUser.user_metadata?.user_role || 'parent', // Lấy role từ metadata Supabase
     subscriptionType: 'trial',
     isPremium: false,
   };
-  setCurrentUser(newUser);
-  return newUser;
+  localStorage.setItem('currentUser', JSON.stringify(user));
+  return user;
+};
+
+export const logout = async () => {
+  await supabase.auth.signOut();
+  localStorage.removeItem('currentUser');
+  window.location.href = "/login";
 };
